@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Instalar Speedy Linux
+Exec=sudo calamares
+Icon=speedy-installer
+Terminal=false
+Categories=System;

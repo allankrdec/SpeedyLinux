@@ -1,0 +1,54 @@
+#!/bin/sh
+set -e
+
+echo "Aplicando configuracoes Speedy..."
+
+# criar pasta
+mkdir -p /etc/speedy
+
+# hostname
+echo "speedy" > /etc/hostname
+
+# garantir GDM como display manager
+echo "/usr/sbin/gdm3" > /etc/X11/default-display-manager
+
+
+# definir wallpaper padrão GNOME (para novos usuários)
+mkdir -p /etc/dconf/db/local.d
+
+cat <<EOF > /etc/dconf/db/local.d/01-wallpaper
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/speedy/wallpaper.png'
+picture-uri-dark='file:///usr/share/speedy/wallpaper.png'
+EOF
+
+# aplicar
+dconf update
+
+echo "pt_BR.UTF-8 UTF-8" > /etc/locale.gen
+locale-gen
+update-locale LANG=pt_BR.UTF-8
+
+#echo "Instalando calamares-settings" >> /root/speedy.txt
+#apt-get update
+#apt-get install -y calamares-settings-debian
+
+#apt-get update
+#apt-get download calamares-settings-debian
+#dpkg -i calamares-settings-debian*.deb || apt-get install -f -y
+
+
+echo "APLICANDO BRANDING CALAMARES..."
+cp -r /usr/share/speedy/calamares/branding/speedy /etc/calamares/branding/
+sed -i 's|^branding:.*|branding: "speedy"|' /etc/calamares/settings.conf
+rm -f /usr/share/applications/calamares-install-debian.desktop
+
+chmod +x /usr/local/bin/firstboot.sh
+systemctl enable firstboot.service
+
+echo "Forçando inclusão do Plymouth no initramfs..."
+echo FRAMEBUFFER=y >> /etc/initramfs-tools/conf.d/splash
+
+plymouth-set-default-theme details
+
+update-initramfs -u -k all

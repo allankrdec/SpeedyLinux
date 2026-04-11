@@ -1,0 +1,6 @@
+[org/gnome/login-screen]
+#logo='/usr/share/speedy/logo.png'
+enabled-smartcard-authentication=false
+
+[org/gnome/settiings-daemon/plugin/power]
+

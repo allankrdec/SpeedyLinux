@@ -1,0 +1,39 @@
+componentName: speedy
+
+welcomeStyleCalamares: true
+welcomeExpandingLogo: true
+
+windowExpanding: normal
+windowSize: 800px,580px
+windowPlacement: center
+
+strings:
+    productName: Speedy Linux
+    shortProductName: Speedy
+    version: 1.0
+    shortVersion: 1.0
+    versionedName: Speedy Linux 1.0
+    shortVersionedName: Speedy Linux
+    bootloaderEntryName: Speedy
+    productUrl: https://speedysistemas.com.br
+    supportUrl: https://speedysistemas.com.br
+    knownIssuesUrl: https://speedysistemas.com.br
+    releaseNotesUrl: https://speedysistemas.com.br
+    donateUrl: https://speedysistemas.com.br
+
+sidebar: widget
+navigation: widget
+
+images:
+    productLogo: "logo.png"
+    productIcon: "logo.png"
+    productWelcome: "welcome.png"
+
+slideshow: "show.qml"
+slideshowAPI: 2
+
+style:
+    SidebarBackground: "#0b3c5d"
+    SidebarText: "#FFFFFF"
+    SidebarTextCurrent: "#00d4ff"
+    SidebarBackgroundCurrent: "#062b40"
