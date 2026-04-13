@@ -1,3 +1,6 @@
+#!/bin/sh
+ARCH=$(dpkg --print-architecture)
+
 set -e
 
 rm -rf build
@@ -13,7 +16,7 @@ lb config \
   --binary-images iso-hybrid \
   --debian-installer live \
   --bootloader grub-efi \
-  --architectures arm64 \
+  --architectures $ARCH \
   --mirror-bootstrap http://deb.debian.org/debian \
   --mirror-chroot http://deb.debian.org/debian \
   --mirror-binary http://deb.debian.org/debian \
