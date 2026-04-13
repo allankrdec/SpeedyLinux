@@ -1,5 +1,18 @@
 #!/bin/bash
 
+#configura o os-release
+cat <<EOF > /etc/os-release
+PRETTY_NAME="Speedy Linux 7.0"
+NAME="Speedy Linux"
+VERSION_ID="13"
+VERSION="13 (trixie)"
+VERSION_CODENAME=trixie
+DEBIAN_VERSION_FULL=13.4
+ID=debian
+HOME_URL="https://www.speedylinux.com.br"
+
+EOF
+
 # Se for LIVE, não faz nada
 if [ -d /run/live ]; then
     echo "Rodando no LIVE, pulando firstboot"
@@ -7,20 +20,6 @@ if [ -d /run/live ]; then
 fi
 
 echo "Executando firstboot no sistema instalado..."
-
-# 🧑‍💻 aplicar avatar para todos usuários
-#for u in $(ls /home); do
-#  echo "Configurando avatar para $u"
-
-#  mkdir -p /var/lib/AccountsService/icons
-#  cp /usr/share/speedy/logo.png /var/lib/AccountsService/icons/$u
-
-#  mkdir -p /var/lib/AccountsService/users
-#  cat <<EOF > /var/lib/AccountsService/users/$u
-#[User]
-#Icon=/var/lib/AccountsService/icons/$u
-#EOF
-#done
 
 chmod 644 /usr/share/speedy/logo.png
 cp /usr/share/speedy/logo.png /etc/skel/.face
@@ -31,9 +30,6 @@ rm -f /usr/share/applications/speedy-installer.desktop
 rm -f /usr/share/applications/calamares.desktop
 rm -f /home/*/Desktop/*speedy*.desktop
 
-# outras configs...
-sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="Speedy Linux 1.0"/' /etc/os-release
-sed -i 's/^NAME=.*/NAME="Speedy Linux"/' /etc/os-release
 
 systemctl disable firstboot.service
 rm -f /etc/systemd/system/firstboot.service
