@@ -18,8 +18,8 @@ lb config \
   --mirror-chroot http://deb.debian.org/debian \
   --mirror-binary http://deb.debian.org/debian \
   --iso-preparer "Speedy" \
-  --iso-volume "Speedy Linux 1.0" \
-  --iso-publisher "Speedy Sistemas"\
+  --iso-volume "Speedy Linux" \
+  --iso-publisher "Speedy Linux"\
   --archive-areas "main contrib non-free non-free-firmware"
 
 lb build
