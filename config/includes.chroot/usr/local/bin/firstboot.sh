@@ -8,6 +8,25 @@ fi
 
 echo "Executando firstboot no sistema instalado..."
 
+# 🧑‍💻 aplicar avatar para todos usuários
+#for u in $(ls /home); do
+#  echo "Configurando avatar para $u"
+
+#  mkdir -p /var/lib/AccountsService/icons
+#  cp /usr/share/speedy/logo.png /var/lib/AccountsService/icons/$u
+
+#  mkdir -p /var/lib/AccountsService/users
+#  cat <<EOF > /var/lib/AccountsService/users/$u
+#[User]
+#Icon=/var/lib/AccountsService/icons/$u
+#EOF
+#done
+
+chmod 644 /usr/share/speedy/logo.png
+cp /usr/share/speedy/logo.png /etc/skel/.face
+chmod 644 /etc/skel/.face
+
+#remove instaladores
 rm -f /usr/share/applications/speedy-installer.desktop
 rm -f /usr/share/applications/calamares.desktop
 rm -f /home/*/Desktop/*speedy*.desktop

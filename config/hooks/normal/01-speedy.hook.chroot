@@ -25,18 +25,21 @@ EOF
 # aplicar
 dconf update
 
+#Ajusta avatar dos usuarios
+#for u in $(ls /home); do
+#  mkdir -p /var/lib/AccountsService/icons
+#  cp /usr/share/speedy/logo.png /var/lib/AccountsService/icons/$u
+
+#  mkdir -p /var/lib/AccountsService/users
+#  cat <<EOF > /var/lib/AccountsService/users/$u
+#[User]
+#Icon=/var/lib/AccountsService/icons/$u
+#EOF
+#done
+
 echo "pt_BR.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
 update-locale LANG=pt_BR.UTF-8
-
-#echo "Instalando calamares-settings" >> /root/speedy.txt
-#apt-get update
-#apt-get install -y calamares-settings-debian
-
-#apt-get update
-#apt-get download calamares-settings-debian
-#dpkg -i calamares-settings-debian*.deb || apt-get install -f -y
-
 
 echo "APLICANDO BRANDING CALAMARES..."
 cp -r /usr/share/speedy/calamares/branding/speedy /etc/calamares/branding/
