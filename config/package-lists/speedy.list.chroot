@@ -23,7 +23,7 @@ ntfs-3g
 dosfstools
 exfatprogs
 
-which gparted
+gparted
 
 wget
 iputils-ping
@@ -57,3 +57,23 @@ gstreamer1.0-plugins-ugly
 gnome-system-monitor
 baobab
 file-roller
+
+# =========================
+# BASE DO SISTEMA
+# =========================
+linux-image-amd64 [amd64]
+linux-image-arm64 [arm64]
+
+initramfs-tools
+live-boot
+systemd-sysv
+
+# =========================
+# GRUB (BOOT)
+# =========================
+grub-common
+os-prober
+
+grub-pc [amd64]
+grub-efi-amd64 [amd64]
+grub-efi-arm64 [arm64]
