@@ -11,7 +11,7 @@ echo "===================================="
 
 case "$ARCH" in
   amd64)
-    BOOTLOADER="grub-efi grub-pc"
+    BOOTLOADER="grub-efi"
     ;;
   arm64)
     BOOTLOADER="grub-efi"
@@ -71,6 +71,20 @@ lb config \
   --iso-volume "Speedy Linux" \
   --iso-publisher "Speedy Linux" \
   --archive-areas "main contrib non-free non-free-firmware"
+
+ARCH=${ARCH:-$(dpkg --print-architecture)}
+
+echo "Arquitetura: $ARCH"
+
+# limpa lista anterior se existir
+PKG_FILE="config/package-lists/speedy.list.chroot"
+
+# adiciona conforme arquitetura
+if [ "$ARCH" = "amd64" ]; then
+  echo "grub-efi-amd64" >> $PKG_FILE
+elif [ "$ARCH" = "arm64" ]; then
+  echo "grub-efi-arm64" >> $PKG_FILE
+fi
 
 lb build
 

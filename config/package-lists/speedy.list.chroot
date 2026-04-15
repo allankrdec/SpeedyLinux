@@ -59,21 +59,48 @@ baobab
 file-roller
 
 # =========================
-# BASE DO SISTEMA
-# =========================
-linux-image-amd64 [amd64]
-linux-image-arm64 [arm64]
-
-initramfs-tools
-live-boot
-systemd-sysv
-
-# =========================
 # GRUB (BOOT)
 # =========================
 grub-common
 os-prober
 
-grub-pc [amd64]
-grub-efi-amd64 [amd64]
-grub-efi-arm64 [arm64]
+
+# =========================
+# WIFI / FIRMWARE
+# =========================
+firmware-iwlwifi
+firmware-realtek
+firmware-atheros
+firmware-brcm80211
+firmware-misc-nonfree
+firmware-linux-free
+
+# =========================
+# BLUETOOTH
+# =========================
+bluez
+bluez-tools
+blueman
+
+# =========================
+# ÁUDIO
+# =========================
+pipewire
+pipewire-audio
+pipewire-pulse
+wireplumber
+
+alsa-utils
+pulseaudio-utils
+libspa-0.2-bluetooth
+pavucontrol
+
+
+# =========================
+# HARDWARE / DEBUG
+# =========================
+usbutils
+pciutils
+hwinfo
+inxi
+rfkill
