@@ -4,14 +4,21 @@
 cat <<EOF > /etc/os-release
 PRETTY_NAME="Speedy Linux 7.0"
 NAME="Speedy Linux"
-VERSION_ID="13"
-VERSION="13 (trixie)"
-VERSION_CODENAME=trixie
-DEBIAN_VERSION_FULL=13.4
-ID=debian
+VERSION_ID="7"
+VERSION="7.0"
+VERSION_CODENAME=speedy
+ID=speedy
+ID_LIKE=debian
 HOME_URL="https://www.speedylinux.com.br"
-
 EOF
+
+cat <<EOF > /etc/lsb-release
+DISTRIB_ID=Speedy
+DISTRIB_RELEASE=7.0
+DISTRIB_CODENAME=speedy
+DISTRIB_DESCRIPTION="Speedy Linux 7.0"
+EOF
+
 
 # Se for LIVE, não faz nada
 if [ -d /run/live ]; then
