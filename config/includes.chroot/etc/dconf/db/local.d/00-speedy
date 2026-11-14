@@ -1,12 +1,13 @@
 # Padrões do GNOME para o Speedy Linux.
 # São apenas valores padrão: o usuário pode alterar e a escolha é mantida.
+#
+# O teclado NÃO é definido aqui: no live ele vem do parâmetro keyboard-layouts
+# do grub.cfg e, no sistema instalado, do teclado escolhido no Calamares
+# (/etc/default/keyboard). Definir input-sources aqui faria o GNOME ignorar isso.
 
 [org/gnome/desktop/background]
 picture-uri='file:///usr/share/speedy/wallpaper.png'
 picture-uri-dark='file:///usr/share/speedy/wallpaper.png'
-
-[org/gnome/desktop/input-sources]
-sources=[('xkb', 'br')]
 
 [org/gnome/desktop/screensaver]
 lock-enabled=false
