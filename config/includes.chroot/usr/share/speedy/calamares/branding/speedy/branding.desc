@@ -10,9 +10,10 @@ windowPlacement: center
 strings:
     productName: Speedy Linux
     shortProductName: Speedy
-    version: 7.0
-    shortVersion: 7.0
-    versionedName: Speedy Linux 7.0
+    # @VERSION_ID@ e @PRETTY_NAME@ vêm do ./os-release (hook 01-speedy)
+    version: "@VERSION_ID@"
+    shortVersion: "@VERSION_ID@"
+    versionedName: "@PRETTY_NAME@"
     shortVersionedName: Speedy Linux
     bootloaderEntryName: Speedy
     productUrl: https://speedysistemas.com.br

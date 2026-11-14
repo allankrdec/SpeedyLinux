@@ -3,8 +3,22 @@ set -e
 
 echo "Aplicando configuracoes Speedy..."
 
-# criar pasta
-mkdir -p /etc/speedy
+# ----------------------------------------------------------
+# os-release / lsb-release (gerado a partir do ./os-release do projeto)
+# ----------------------------------------------------------
+# desvia o arquivo do base-files para que atualizações não sobrescrevam
+dpkg-divert --local --rename --add /usr/lib/os-release
+install -m 644 /etc/speedy/os-release /usr/lib/os-release
+ln -sf ../usr/lib/os-release /etc/os-release
+
+. /etc/speedy/os-release
+
+cat <<EOF > /etc/lsb-release
+DISTRIB_ID=Speedy
+DISTRIB_RELEASE=$VERSION_ID
+DISTRIB_CODENAME=$VERSION_CODENAME
+DISTRIB_DESCRIPTION="$PRETTY_NAME"
+EOF
 
 # hostname
 echo "speedy" > /etc/hostname
@@ -12,43 +26,32 @@ echo "speedy" > /etc/hostname
 # garantir GDM como display manager
 echo "/usr/sbin/gdm3" > /etc/X11/default-display-manager
 
-
-# definir wallpaper padrão GNOME (para novos usuários)
-mkdir -p /etc/dconf/db/local.d
-
-cat <<EOF > /etc/dconf/db/local.d/01-wallpaper
-[org/gnome/desktop/background]
-picture-uri='file:///usr/share/speedy/wallpaper.png'
-picture-uri-dark='file:///usr/share/speedy/wallpaper.png'
-EOF
-
-# aplicar
+# padrões do GNOME (config/includes.chroot/etc/dconf/db/local.d/00-speedy)
 dconf update
 
-#Ajusta avatar dos usuarios
-#for u in $(ls /home); do
-#  mkdir -p /var/lib/AccountsService/icons
-#  cp /usr/share/speedy/logo.png /var/lib/AccountsService/icons/$u
-
-#  mkdir -p /var/lib/AccountsService/users
-#  cat <<EOF > /var/lib/AccountsService/users/$u
-#[User]
-#Icon=/var/lib/AccountsService/icons/$u
-#EOF
-#done
-
+# locale
 echo "pt_BR.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
-update-locale LANG=pt_BR.UTF-8
+update-locale LANG=pt_BR.UTF-8 LANGUAGE=pt_BR:pt
 
+# ----------------------------------------------------------
+# Calamares
+# ----------------------------------------------------------
 echo "APLICANDO BRANDING CALAMARES..."
 cp -r /usr/share/speedy/calamares/branding/speedy /etc/calamares/branding/
+sed -i \
+  -e "s|@VERSION_ID@|$VERSION_ID|g" \
+  -e "s|@PRETTY_NAME@|$PRETTY_NAME|g" \
+  /etc/calamares/branding/speedy/branding.desc
 sed -i 's|^branding:.*|branding: "speedy"|' /etc/calamares/settings.conf
 rm -f /usr/share/applications/calamares-install-debian.desktop
 
 chmod +x /usr/local/bin/firstboot.sh
 systemctl enable firstboot.service
 
+# ----------------------------------------------------------
+# Plymouth
+# ----------------------------------------------------------
 echo "Forçando inclusão do Plymouth no initramfs..."
 echo FRAMEBUFFER=y >> /etc/initramfs-tools/conf.d/splash
 

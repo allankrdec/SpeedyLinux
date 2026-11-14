@@ -2,19 +2,41 @@
 
 set -e
 
-ARCH="${ARCH:-$(dpkg --print-architecture)}"
+cd "$(dirname "$0")"
 
-echo "===================================="
-echo " Speedy Linux build"
-echo " Arquitetura: $ARCH"
-echo "===================================="
+# live-build precisa de root
+if [ "$(id -u)" -ne 0 ]; then
+  exec sudo ARCH="${ARCH:-}" "$0" "$@"
+fi
+
+# ----------------------------------------------------------
+# Versão (fonte única: ./os-release)
+# ----------------------------------------------------------
+if [ ! -f os-release ]; then
+  echo "Arquivo os-release não encontrado na raiz do projeto"
+  exit 1
+fi
+
+. ./os-release
+
+: "${VERSION_ID:?VERSION_ID não definido no os-release}"
+: "${PRETTY_NAME:?PRETTY_NAME não definido no os-release}"
+: "${VERSION_CODENAME:?VERSION_CODENAME não definido no os-release}"
+
+# ----------------------------------------------------------
+# Arquitetura
+# ----------------------------------------------------------
+ARCH="${ARCH:-$(dpkg --print-architecture)}"
 
 case "$ARCH" in
   amd64)
-    BOOTLOADER="grub-efi"
+    # grub-pc = boot BIOS legado, grub-efi = boot UEFI
+    BOOTLOADERS="grub-pc,grub-efi"
+    ARCH_PACKAGES="grub-efi-amd64 amd64-microcode intel-microcode"
     ;;
   arm64)
-    BOOTLOADER="grub-efi"
+    BOOTLOADERS="grub-efi"
+    ARCH_PACKAGES="grub-efi-arm64"
     ;;
   *)
     echo "Arquitetura não suportada: $ARCH"
@@ -22,72 +44,97 @@ case "$ARCH" in
     ;;
 esac
 
-rm -rf build
-mkdir build
+echo "===================================="
+echo " $PRETTY_NAME build"
+echo " Base:         Debian $VERSION_CODENAME"
+echo " Arquitetura:  $ARCH"
+echo "===================================="
 
-# copia sua config inteira, sem remover nada
+# ----------------------------------------------------------
+# Prepara o diretório build/ (preserva o cache de pacotes)
+# ----------------------------------------------------------
+mkdir -p build
+
+# limpa a build anterior com lb clean (desmonta /proc, /sys etc. do chroot)
+if [ -d build/config ]; then
+  (cd build && lb clean)
+fi
+
+# cache de outra arquitetura não serve
+if [ -f build/.arch ] && [ "$(cat build/.arch)" != "$ARCH" ]; then
+  rm -rf build/cache
+fi
+
+find build -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} +
+echo "$ARCH" > build/.arch
+
 cp -r config build/
 
-# se existir grub customizado, ajusta a arquitetura automaticamente
-GRUB_CFG="build/config/includes.binary/boot/grub/grub.cfg"
+# os-release vai para a ISO (instalado pelo hook 01-speedy)
+mkdir -p build/config/includes.chroot/etc/speedy
+cp os-release build/config/includes.chroot/etc/speedy/os-release
 
-if [ -f "$GRUB_CFG" ]; then
-  echo "Ajustando grub.cfg customizado para $ARCH..."
+# ----------------------------------------------------------
+# Imagens (fonte única: ./images) -> destino dentro da ISO
+# ----------------------------------------------------------
+INCLUDES="build/config/includes.chroot"
+BRANDING="usr/share/speedy/calamares/branding/speedy"
 
-  # troca qualquer referência fixa de arquitetura no nome do kernel/initrd
-  sed -i.bak \
-    -e "s/-arm64/-${ARCH}/g" \
-    -e "s/-amd64/-${ARCH}/g" \
-    "$GRUB_CFG"
-
-  # se você tiver referências EFI hardcoded em algum ponto
-  if [ "$ARCH" = "amd64" ]; then
-    sed -i.bak \
-      -e "s/BOOTAA64.EFI/BOOTX64.EFI/g" \
-      -e "s/grubaa64\\.efi/grubx64.efi/g" \
-      "$GRUB_CFG"
-  elif [ "$ARCH" = "arm64" ]; then
-    sed -i.bak \
-      -e "s/BOOTX64.EFI/BOOTAA64.EFI/g" \
-      -e "s/grubx64\\.efi/grubaa64.efi/g" \
-      "$GRUB_CFG"
+while read -r IMG DEST; do
+  [ -n "$IMG" ] || continue
+  if [ ! -f "images/$IMG" ]; then
+    echo "Imagem não encontrada: images/$IMG"
+    exit 1
   fi
+  mkdir -p "$(dirname "$INCLUDES/$DEST")"
+  cp "images/$IMG" "$INCLUDES/$DEST"
+done <<EOF
+logo.png        usr/share/speedy/logo.png
+logo.png        $BRANDING/logo.png
+welcome.png     $BRANDING/welcome.png
+wallpaper.png   usr/share/speedy/wallpaper.png
+installer.png   usr/share/icons/hicolor/256x256/apps/speedy-installer.png
+avatar.png      etc/skel/.face
+EOF
 
-  rm -f "${GRUB_CFG}.bak"
-fi
+# pacotes específicos da arquitetura
+printf '%s\n' $ARCH_PACKAGES > build/config/package-lists/arch.list.chroot
 
 cd build
 
+# --debian-installer live: não aparece no menu (o grub.cfg é customizado),
+# mas gera o repositório local na ISO que o Calamares usa para instalar
+# o grub-pc/grub-efi no sistema de destino sem precisar de internet.
 lb config \
-  --distribution trixie \
+  --distribution "$VERSION_CODENAME" \
   --binary-images iso-hybrid \
   --debian-installer live \
-  --bootloader "$BOOTLOADER" \
+  --bootloaders "$BOOTLOADERS" \
   --architectures "$ARCH" \
   --mirror-bootstrap http://deb.debian.org/debian \
   --mirror-chroot http://deb.debian.org/debian \
   --mirror-binary http://deb.debian.org/debian \
   --iso-preparer "Speedy" \
-  --iso-volume "Speedy Linux" \
+  --iso-volume "Speedy Linux $VERSION_ID" \
   --iso-publisher "Speedy Linux" \
   --archive-areas "main contrib non-free non-free-firmware"
 
-ARCH=${ARCH:-$(dpkg --print-architecture)}
-
-echo "Arquitetura: $ARCH"
-
-# limpa lista anterior se existir
-PKG_FILE="config/package-lists/speedy.list.chroot"
-
-# adiciona conforme arquitetura
-if [ "$ARCH" = "amd64" ]; then
-  echo "grub-efi-amd64" >> $PKG_FILE
-elif [ "$ARCH" = "arm64" ]; then
-  echo "grub-efi-arm64" >> $PKG_FILE
-fi
-
 lb build
 
+cd ..
+
+# ----------------------------------------------------------
+# ISO final
+# ----------------------------------------------------------
+mkdir -p dist
+ISO="dist/speedylinux-${VERSION_ID}-${ARCH}.iso"
+mv "build/live-image-${ARCH}.hybrid.iso" "$ISO"
+
+# devolve a ISO para o usuário que chamou o sudo
+if [ -n "$SUDO_UID" ]; then
+  chown "$SUDO_UID:$SUDO_GID" dist "$ISO"
+fi
+
 echo "===================================="
-echo " Build finalizada para $ARCH"
+echo " Build finalizada: $ISO"
 echo "===================================="

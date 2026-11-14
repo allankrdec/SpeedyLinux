@@ -76,6 +76,14 @@ firmware-misc-nonfree
 firmware-linux-free
 
 # =========================
+# VÍDEO / ÁUDIO (firmware)
+# microcode da CPU fica em arch.list.chroot (gerado pelo build.sh)
+# =========================
+firmware-amd-graphics
+firmware-intel-graphics
+firmware-sof-signed
+
+# =========================
 # BLUETOOTH
 # =========================
 bluez

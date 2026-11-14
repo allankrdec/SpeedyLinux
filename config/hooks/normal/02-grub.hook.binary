@@ -1,0 +1,21 @@
+#!/bin/sh
+# Executado pelo live-build dentro de build/binary, depois que o kernel
+# foi copiado para live/. Preenche o grub.cfg customizado com os nomes
+# reais do kernel/initrd (a versão muda a cada atualização do Debian).
+set -e
+
+CFG="boot/grub/grub.cfg"
+[ -f "$CFG" ] || exit 0
+
+KERNEL=$(ls live/vmlinuz-* | sort -V | tail -n 1)
+INITRD=$(ls live/initrd.img-* | sort -V | tail -n 1)
+
+. ../config/includes.chroot/etc/speedy/os-release
+
+echo "grub.cfg: /$KERNEL, /$INITRD"
+
+sed -i \
+  -e "s|@KERNEL@|/$KERNEL|g" \
+  -e "s|@INITRD@|/$INITRD|g" \
+  -e "s|@PRETTY_NAME@|$PRETTY_NAME|g" \
+  "$CFG"

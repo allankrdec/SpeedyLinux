@@ -1,10 +1,24 @@
-PRETTY_NAME="Speedy Linux 1.0"
+# ==========================================================
+#  Versão do Speedy Linux — FONTE ÚNICA
+#
+#  Para lançar uma nova versão, altere VERSION_ID, VERSION e
+#  PRETTY_NAME. O build.sh usa este arquivo para:
+#    - instalar /etc/os-release e /etc/lsb-release na ISO
+#    - preencher a versão no branding do Calamares
+#    - preencher o título do menu do GRUB
+#    - nomear a ISO (dist/speedylinux-<VERSION_ID>-<arch>.iso)
+#
+#  VERSION_CODENAME é o codinome da base Debian e também define
+#  o --distribution do live-build.
+#
+#  Mantenha o formato os-release: CHAVE=valor, sem variáveis.
+# ==========================================================
 NAME="Speedy Linux"
-VERSION_ID="13"
-VERSION="13 (trixie)"
+VERSION_ID="7.0"
+VERSION="7.0 (trixie)"
+PRETTY_NAME="Speedy Linux 7.0"
 VERSION_CODENAME=trixie
-DEBIAN_VERSION_FULL=13.4
-ID=debian
-HOME_URL="https://www.debian.org/"
-SUPPORT_URL="https://www.debian.org/support"
-BUG_REPORT_URL="https://bugs.debian.org/"
+ID=speedy
+ID_LIKE=debian
+HOME_URL="https://www.speedylinux.com.br"
+SUPPORT_URL="https://speedysistemas.com.br"

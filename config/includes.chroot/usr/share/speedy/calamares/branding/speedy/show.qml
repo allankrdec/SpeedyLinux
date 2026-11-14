@@ -1,3 +1,4 @@
+import QtQuick 2.0;
 import calamares.slideshow 1.0;
 
 Presentation
@@ -13,7 +14,7 @@ Presentation
     Slide {
         Image {
             id: background1
-            source: "slide1.png"
+            source: "welcome.png"
             width: 467; height: 280
             fillMode: Image.PreserveAspectFit
             anchors.centerIn: parent
