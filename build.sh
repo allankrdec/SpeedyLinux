@@ -1,12 +1,26 @@
 #!/bin/sh
+#
+# Gera a ISO do Speedy Linux. Precisa rodar em Linux (Debian).
+# No macOS/Windows use ./docker-build.sh, que roda este script num container.
+#
+# Variáveis opcionais:
+#   ARCH        amd64 | arm64 (padrão: a do host)
+#   BUILD_DIR   diretório de trabalho do live-build (padrão: ./build)
+#   DIST_DIR    onde a ISO final é gravada (padrão: ./dist)
+#   HOST_OWNER  uid:gid dono da ISO final (padrão: quem chamou o sudo)
 
 set -e
 
 cd "$(dirname "$0")"
+PROJECT_DIR="$(pwd)"
+
+BUILD_DIR="${BUILD_DIR:-$PROJECT_DIR/build}"
+DIST_DIR="${DIST_DIR:-$PROJECT_DIR/dist}"
 
 # live-build precisa de root
 if [ "$(id -u)" -ne 0 ]; then
-  exec sudo ARCH="${ARCH:-}" "$0" "$@"
+  exec sudo ARCH="${ARCH:-}" BUILD_DIR="$BUILD_DIR" DIST_DIR="$DIST_DIR" \
+    HOST_OWNER="${HOST_OWNER:-}" "$0" "$@"
 fi
 
 # ----------------------------------------------------------
@@ -48,36 +62,38 @@ echo "===================================="
 echo " $PRETTY_NAME build"
 echo " Base:         Debian $VERSION_CODENAME"
 echo " Arquitetura:  $ARCH"
+echo " Build:        $BUILD_DIR"
 echo "===================================="
 
 # ----------------------------------------------------------
-# Prepara o diretório build/ (preserva o cache de pacotes)
+# Prepara o diretório de build (preserva o cache de pacotes)
 # ----------------------------------------------------------
-mkdir -p build
+mkdir -p "$BUILD_DIR"
 
 # limpa a build anterior com lb clean (desmonta /proc, /sys etc. do chroot)
-if [ -d build/config ]; then
-  (cd build && lb clean)
+if [ -d "$BUILD_DIR/config" ]; then
+  (cd "$BUILD_DIR" && lb clean)
 fi
 
-# cache de outra arquitetura não serve
-if [ -f build/.arch ] && [ "$(cat build/.arch)" != "$ARCH" ]; then
-  rm -rf build/cache
+# cache de outra arquitetura ou de outra versão do Debian não serve
+TARGET="$VERSION_CODENAME-$ARCH"
+if [ "$(cat "$BUILD_DIR/.target" 2>/dev/null)" != "$TARGET" ]; then
+  rm -rf "$BUILD_DIR/cache"
 fi
 
-find build -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} +
-echo "$ARCH" > build/.arch
+find "$BUILD_DIR" -mindepth 1 -maxdepth 1 ! -name cache -exec rm -rf {} +
+echo "$TARGET" > "$BUILD_DIR/.target"
 
-cp -r config build/
+cp -r config "$BUILD_DIR/"
 
 # os-release vai para a ISO (instalado pelo hook 01-speedy)
-mkdir -p build/config/includes.chroot/etc/speedy
-cp os-release build/config/includes.chroot/etc/speedy/os-release
+INCLUDES="$BUILD_DIR/config/includes.chroot"
+mkdir -p "$INCLUDES/etc/speedy"
+cp os-release "$INCLUDES/etc/speedy/os-release"
 
 # ----------------------------------------------------------
 # Imagens (fonte única: ./images) -> destino dentro da ISO
 # ----------------------------------------------------------
-INCLUDES="build/config/includes.chroot"
 BRANDING="usr/share/speedy/calamares/branding/speedy"
 
 while read -r IMG DEST; do
@@ -98,9 +114,9 @@ avatar.png      etc/skel/.face
 EOF
 
 # pacotes específicos da arquitetura
-printf '%s\n' $ARCH_PACKAGES > build/config/package-lists/arch.list.chroot
+printf '%s\n' $ARCH_PACKAGES > "$BUILD_DIR/config/package-lists/arch.list.chroot"
 
-cd build
+cd "$BUILD_DIR"
 
 # --debian-installer live: não aparece no menu (o grub.cfg é customizado),
 # mas gera o repositório local na ISO que o Calamares usa para instalar
@@ -121,18 +137,19 @@ lb config \
 
 lb build
 
-cd ..
+cd "$PROJECT_DIR"
 
 # ----------------------------------------------------------
 # ISO final
 # ----------------------------------------------------------
-mkdir -p dist
-ISO="dist/speedylinux-${VERSION_ID}-${ARCH}.iso"
-mv "build/live-image-${ARCH}.hybrid.iso" "$ISO"
+mkdir -p "$DIST_DIR"
+ISO="$DIST_DIR/speedylinux-${VERSION_ID}-${ARCH}.iso"
+mv "$BUILD_DIR/live-image-${ARCH}.hybrid.iso" "$ISO"
 
-# devolve a ISO para o usuário que chamou o sudo
-if [ -n "$SUDO_UID" ]; then
-  chown "$SUDO_UID:$SUDO_GID" dist "$ISO"
+# devolve a ISO para o usuário que chamou o sudo / o docker
+OWNER="${HOST_OWNER:-${SUDO_UID:+$SUDO_UID:$SUDO_GID}}"
+if [ -n "$OWNER" ]; then
+  chown "$OWNER" "$DIST_DIR" "$ISO"
 fi
 
 echo "===================================="

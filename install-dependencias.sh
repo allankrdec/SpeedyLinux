@@ -1,4 +1,7 @@
 #!/bin/sh
+# Instala as ferramentas de build no host Debian (também usado pelo Dockerfile)
+set -e
+
 ARCH=$(dpkg --print-architecture)
 
 BASE_PACKAGES="live-build debootstrap xorriso squashfs-tools mtools dosfstools rsync wget curl gnupg ca-certificates"
@@ -12,4 +15,8 @@ else
     exit 1
 fi
 
-sudo apt install -y $BASE_PACKAGES $EXTRA
+SUDO=""
+[ "$(id -u)" -eq 0 ] || SUDO="sudo"
+
+$SUDO apt-get update
+$SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y $BASE_PACKAGES $EXTRA

@@ -8,14 +8,15 @@
 #    - preencher o título do menu do GRUB
 #    - nomear a ISO (dist/speedylinux-<VERSION_ID>-<arch>.iso)
 #
-#  VERSION_CODENAME é o codinome da base Debian e também define
-#  o --distribution do live-build.
+#  Base Debian: VERSION_CODENAME (trixie = Debian 13,
+#  forky = Debian 14). Define a versão do Debian usada na ISO
+#  e no container do docker-build.sh.
 #
 #  Mantenha o formato os-release: CHAVE=valor, sem variáveis.
 # ==========================================================
 NAME="Speedy Linux"
 VERSION_ID="7.0"
-VERSION="7.0 (trixie)"
+VERSION="7.0"
 PRETTY_NAME="Speedy Linux 7.0"
 VERSION_CODENAME=trixie
 ID=speedy
