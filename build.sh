@@ -103,7 +103,7 @@ while read -r IMG DEST; do
     exit 1
   fi
   mkdir -p "$(dirname "$INCLUDES/$DEST")"
-  cp "images/$IMG" "$INCLUDES/$DEST"
+  install -m 644 "images/$IMG" "$INCLUDES/$DEST"
 done <<EOF
 logo.png        usr/share/speedy/logo.png
 logo.png        $BRANDING/logo.png
