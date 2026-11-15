@@ -50,6 +50,14 @@ As imagens ficam **só** na pasta [`images/`](images). A build copia cada uma pa
 
 Para trocar uma imagem, substitua o arquivo **mantendo o nome**. Não precisa mexer em `config/`.
 
+O `wallpaper.png` (3840x2160) e o `welcome.png` (2048x1280) são gerados por
+[`tools/gerar-imagens.py`](tools/gerar-imagens.py), que desenha o logo em vetor no estilo da distro.
+Para ajustar (cores, tamanho do logo, texto), edite o script e rode:
+
+```sh
+./tools/gerar-imagens.sh   # usa Docker; grava em images/
+```
+
 ## 3. Gerar a ISO
 
 As arquiteturas suportadas são `amd64` e `arm64`.
@@ -106,6 +114,7 @@ Alterar a versão ou as imagens **não** apaga o cache. Ele só é descartado co
 
 - `os-release` – versão e base Debian
 - `images/` – imagens da distro
+- `tools/gerar-imagens.sh` + `.py` – geram o wallpaper e a tela de boas-vindas
 - `build.sh` – gera a ISO (Linux)
 - `docker-build.sh` + `Dockerfile` – rodam o `build.sh` num container Debian
 - `install-dependencias.sh` – ferramentas de build (host Debian e container)
