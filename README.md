@@ -99,6 +99,24 @@ e os pacotes já baixados (só baixam atualizações), então ficam bem mais rá
 Alterar a versão ou as imagens **não** apaga o cache. Ele só é descartado com
 `./docker-build.sh clean` / `./clean-build.sh`, ou ao trocar a base Debian ou a arquitetura.
 
+### Kernel e firmwares do backports (Wi-Fi e rede)
+
+O kernel do Debian estável não reconhece placas mais novas. Por exemplo, o TP-Link Archer
+T2U Nano (Realtek RTL8811AU) só funciona a partir do kernel 6.13, e o Debian 13 usa o 6.12.
+Por isso a build instala o **kernel e os firmwares do `<debian>-backports`**, que são
+oficiais do Debian. O resto do sistema continua no Debian estável.
+
+- O `build.sh` gera `config/archives/speedy-backports.pref`, que dá prioridade ao backports
+  só para os pacotes `linux-*` do kernel e `firmware-*`.
+- Esse pin vai para o sistema instalado. O Calamares já grava o backports no
+  `/etc/apt/sources.list`, então o kernel e os firmwares continuam sendo atualizados por ele.
+- O live-build também instala sozinho todos os pacotes de firmware do Debian (Intel, Realtek,
+  MediaTek, Atheros, Broadcom etc.), não só os de `config/package-lists/`.
+- Para gerar com o kernel do Debian estável: `BACKPORTS=false ./docker-build.sh`. Use isso
+  também com uma base Debian que ainda não tenha backports (testing).
+- Drivers de fora do kernel (DKMS, como o `broadcom-sta` ou drivers Realtek do GitHub) não
+  estão na ISO de propósito: quebram com atualizações do kernel e não carregam com Secure Boot.
+
 ## Outras personalizações
 
 | O quê | Onde |

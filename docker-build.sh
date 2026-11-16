@@ -63,6 +63,7 @@ docker run --rm -i $TTY --privileged \
   -v "$(pwd)/dist":/dist \
   -v "$VOLUME":/build \
   -e ARCH="$ARCH" \
+  -e BACKPORTS="${BACKPORTS:-true}" \
   -e BUILD_DIR=/build \
   -e DIST_DIR=/dist \
   -e HOST_OWNER="$(id -u):$(id -g)" \

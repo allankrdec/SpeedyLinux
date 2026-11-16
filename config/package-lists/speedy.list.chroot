@@ -75,6 +75,10 @@ firmware-brcm80211
 firmware-misc-nonfree
 firmware-linux-free
 
+# diagnóstico de rede/Wi-Fi
+iw
+ethtool
+
 # =========================
 # VÍDEO / ÁUDIO (firmware)
 # microcode da CPU fica em arch.list.chroot (gerado pelo build.sh)

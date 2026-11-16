@@ -8,6 +8,7 @@
 #   BUILD_DIR   diretório de trabalho do live-build (padrão: ./build)
 #   DIST_DIR    onde a ISO final é gravada (padrão: ./dist)
 #   HOST_OWNER  uid:gid dono da ISO final (padrão: quem chamou o sudo)
+#   BACKPORTS   true | false: kernel e firmwares do <debian>-backports (padrão: true)
 
 set -e
 
@@ -19,7 +20,7 @@ DIST_DIR="${DIST_DIR:-$PROJECT_DIR/dist}"
 
 # live-build precisa de root
 if [ "$(id -u)" -ne 0 ]; then
-  exec sudo ARCH="${ARCH:-}" BUILD_DIR="$BUILD_DIR" DIST_DIR="$DIST_DIR" \
+  exec sudo ARCH="${ARCH:-}" BACKPORTS="${BACKPORTS:-}" BUILD_DIR="$BUILD_DIR" DIST_DIR="$DIST_DIR" \
     HOST_OWNER="${HOST_OWNER:-}" "$0" "$@"
 fi
 
@@ -41,6 +42,7 @@ fi
 # Arquitetura
 # ----------------------------------------------------------
 ARCH="${ARCH:-$(dpkg --print-architecture)}"
+BACKPORTS="${BACKPORTS:-true}"
 
 case "$ARCH" in
   amd64)
@@ -62,6 +64,7 @@ echo "===================================="
 echo " $PRETTY_NAME build"
 echo " Base:         Debian $VERSION_CODENAME"
 echo " Arquitetura:  $ARCH"
+echo " Backports:    $BACKPORTS"
 echo " Build:        $BUILD_DIR"
 echo "===================================="
 
@@ -116,6 +119,27 @@ EOF
 # pacotes específicos da arquitetura
 printf '%s\n' $ARCH_PACKAGES > "$BUILD_DIR/config/package-lists/arch.list.chroot"
 
+# ----------------------------------------------------------
+# Kernel e firmwares do backports (placas Wi-Fi/rede mais novas)
+# ----------------------------------------------------------
+# Só o kernel e os firmwares vêm do backports; o resto continua no Debian
+# estável. O pin vai para a ISO e para o sistema instalado (o Calamares já
+# grava o <debian>-backports no sources.list), então o kernel e os
+# firmwares continuam sendo atualizados pelo backports.
+if [ "$BACKPORTS" = "true" ]; then
+  mkdir -p "$BUILD_DIR/config/archives"
+  cat > "$BUILD_DIR/config/archives/speedy-backports.pref" <<PREF
+# Speedy Linux: kernel e firmwares do $VERSION_CODENAME-backports
+Package: linux-image-* linux-headers-* linux-kbuild-* linux-base linux-base-* linux-binary-* linux-modules-* linux-support-*
+Pin: release n=$VERSION_CODENAME-backports
+Pin-Priority: 990
+
+Package: firmware-*
+Pin: release n=$VERSION_CODENAME-backports
+Pin-Priority: 990
+PREF
+fi
+
 cd "$BUILD_DIR"
 
 # --debian-installer live: não aparece no menu (o grub.cfg é customizado),
@@ -130,6 +154,7 @@ lb config \
   --mirror-bootstrap http://deb.debian.org/debian \
   --mirror-chroot http://deb.debian.org/debian \
   --mirror-binary http://deb.debian.org/debian \
+  --backports "$BACKPORTS" \
   --iso-preparer "Speedy" \
   --iso-volume "Speedy Linux $VERSION_ID" \
   --iso-publisher "Speedy Linux" \
