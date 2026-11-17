@@ -1,0 +1,19 @@
+#!/bin/sh
+# Remove firmwares de servidor/datacenter que o live-build instala junto com
+# todos os outros (--firmware-chroot). Não servem para desktop e só aumentam
+# a ISO e o initrd. Os firmwares de Wi-Fi, rede, vídeo e som continuam.
+#   firmware-netronome             141 MB  placas SmartNIC de datacenter
+#   firmware-marvell-prestera       59 MB  chip de switch de rede
+#   firmware-nvidia-tesla-*-gsp     59 MB  só para o driver NVIDIA Tesla (datacenter)
+set -e
+
+PACOTES=$(dpkg-query -W -f='${db:Status-Abbrev} ${binary:Package}\n' \
+  'firmware-netronome' 'firmware-marvell-prestera' 'firmware-nvidia-tesla-*-gsp' 2>/dev/null \
+  | awk '$1 == "ii" {print $2}' || true)
+
+if [ -n "$PACOTES" ]; then
+  echo "Removendo firmwares de servidor:" $PACOTES
+  apt-get purge -y $PACOTES
+  # o initrd foi gerado com esses firmwares dentro
+  update-initramfs -u -k all
+fi

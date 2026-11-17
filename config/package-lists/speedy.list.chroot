@@ -22,6 +22,11 @@ plymouth-themes
 ntfs-3g
 dosfstools
 exfatprogs
+# o Calamares remove os pacotes dele e os que só ele usava; sem estes na
+# lista, um sistema instalado com criptografia ou em btrfs não dá boot
+cryptsetup
+cryptsetup-initramfs
+btrfs-progs
 
 gparted
 

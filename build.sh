@@ -145,6 +145,8 @@ cd "$BUILD_DIR"
 # --debian-installer live: não aparece no menu (o grub.cfg é customizado),
 # mas gera o repositório local na ISO que o Calamares usa para instalar
 # o grub-pc/grub-efi no sistema de destino sem precisar de internet.
+# --firmware-binary false: não põe os firmwares nesse repositório (~360 MB);
+# só o instalador d-i, que não é usado, precisaria deles.
 lb config \
   --distribution "$VERSION_CODENAME" \
   --binary-images iso-hybrid \
@@ -155,6 +157,7 @@ lb config \
   --mirror-chroot http://deb.debian.org/debian \
   --mirror-binary http://deb.debian.org/debian \
   --backports "$BACKPORTS" \
+  --firmware-binary false \
   --iso-preparer "Speedy" \
   --iso-volume "Speedy Linux $VERSION_ID" \
   --iso-publisher "Speedy Linux" \
